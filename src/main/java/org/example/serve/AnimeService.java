@@ -23,7 +23,16 @@ public class AnimeService {
         // 这一行代替了你原来的 Stream 排序
         return animeRepository.findAll(Sort.by(Sort.Direction.DESC, "lovepoint"));
     }
-
+    public void update(Anime updatedAnime) {
+        // 在实际项目中，通常建议在更新前先检查是否存在
+        if (updatedAnime.getId() != null && animeRepository.existsById(updatedAnime.getId())) {
+            // save 方法会自动执行更新操作
+            animeRepository.save(updatedAnime);
+        } else {
+            // 这里可以抛出异常，告知找不到该动漫
+            throw new RuntimeException("更新失败：ID 为 " + updatedAnime.getId() + " 的动漫不存在。");
+        }
+    }
     public void add(Anime anime) {
         // 目的：直接存入数据库
         // 这一行代替了你原来的 ObjectMapper 写入文件

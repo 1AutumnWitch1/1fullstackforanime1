@@ -26,6 +26,19 @@ public class AnimeController {
         animeService.add(newAnime);
         return "添加成功！动漫名称：" + newAnime.getTitle();
     }
+    @PutMapping
+    public String updateAnime(@RequestBody Anime animeToUpdate) {
+        if (animeToUpdate.getId() == null) {
+            return "更新失败：必须提供需要更新的动漫 ID。";
+        }
+
+        try {
+            animeService.update(animeToUpdate);
+            return "修改成功！ID 为：" + animeToUpdate.getId() + "，新名称：" + animeToUpdate.getTitle();
+        } catch (RuntimeException e) {
+            return e.getMessage(); // 返回 Service 层抛出的错误信息
+        }
+    }
     @DeleteMapping("/{id}")
     public String deleteAnime(@PathVariable Long id) {
         animeService.delete(id);
