@@ -1,0 +1,16 @@
+### 1. 获取所有动漫列表
+GET http://localhost:8080/animes
+Accept: application/json
+
+###
+
+### 2. 添加一部新动漫
+POST http://localhost:8080/animes
+Content-Type: application/json
+
+{
+  "id": 103,
+  "title": "咒术回战",
+  "description": "领域展开，无量空处！",
+  "lovepoint": 99
+}
