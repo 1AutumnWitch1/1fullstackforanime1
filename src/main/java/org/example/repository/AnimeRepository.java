@@ -6,5 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository // 目的：标记为数据访问层组件
 public interface AnimeRepository extends JpaRepository<Anime, Long> {
+    boolean existsByTitle(String title);
     // 继承 JpaRepository 后，你自动拥有了 save(), findAll(), deleteById() 等所有功能
 }

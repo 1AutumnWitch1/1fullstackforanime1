@@ -37,9 +37,15 @@ public class AnimeService {
         // 目的：直接存入数据库
         // 这一行代替了你原来的 ObjectMapper 写入文件
         animeRepository.save(anime);
+
+        if (animeRepository.existsByTitle(anime.getTitle())) {
+            throw new RuntimeException("添加失败：动漫《" + anime.getTitle() + "》已在库中。");
+        }
+        animeRepository.save(anime);
     }
     public void delete(Long id) {
         // 目的：根据主键 ID 从数据库中移除记录
         animeRepository.deleteById(id);
     }
+
 }
