@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Anime Admin Pro - 动漫管理系统</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app" v-cloak>
+  <nav class="top-nav">
+    <div class="logo">🎬 AnimeHub <span class="tag">Alpha</span></div>
+    <div class="user-area">
+      <template v-if="currentUser">
+                <span class="welcome">欢迎, {{ currentUser.username }}
+                    <b :class="currentUser.role">[{{ roleText }}]</b>
+                </span>
+        <button v-if="currentUser.role === 'admin'" class="admin-btn" @click="showAdminPanel = true">管理后台</button>
+        <button @click="logout" class="logout-btn">退出</button>
+      </template>
+      <button v-else @click="showLoginModal = true" class="login-btn">登录 / 注册</button>
+    </div>
+  </nav>
+
+  <div class="main-layout">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h3>动漫目录</h3>
+        <button v-if="currentUser" class="add-btn-sm" @click="showAddModal = true">+</button>
+      </div>
+      <div class="list-wrapper">
+        <div v-for="item in animes"
+             :key="item.id"
+             :class="['sidebar-item', { active: selectedAnime?.id === item.id }]"
+             @click="selectedAnime = item">
+          <span class="title">{{ item.title }}</span>
+          <span class="score">{{ item.lovepoint }}</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="content-area">
+      <div v-if="selectedAnime" class="anime-detail">
+        <div class="detail-header">
+          <h2>{{ selectedAnime.title }}</h2>
+          <span class="love-badge">❤️ {{ selectedAnime.lovepoint }} 点</span>
+        </div>
+        <hr>
+        <div class="detail-body">
+          <h4>剧情简介：</h4>
+          <p>{{ selectedAnime.description || '暂无详细描述。' }}</p>
+        </div>
+        <div v-if="currentUser?.role === 'admin'" class="admin-actions">
+          <button class="delete-btn" @click="deleteAnime(selectedAnime.id)">下架该动漫</button>
+        </div>
+      </div>
+      <div v-else class="empty-state">
+        <img src="https://via.placeholder.com/150?text=Anime" alt="empty">
+        <p>点击左侧列表查看详细信息</p>
+      </div>
+    </main>
+  </div>
+
+  <div v-if="showLoginModal" class="modal-overlay">
+    <div class="modal">
+      <h3>系统登录</h3>
+      <input v-model="loginForm.username" placeholder="账号 (输入 admin 体验管理员)">
+      <input type="password" v-model="loginForm.password" placeholder="密码">
+      <div class="modal-btns">
+        <button @click="handleLogin">确认登录</button>
+        <button @click="showLoginModal = false">取消</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
