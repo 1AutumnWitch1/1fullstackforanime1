@@ -34,13 +34,11 @@ public class AnimeService {
         }
     }
     public void add(Anime anime) {
-        // 目的：直接存入数据库
-        // 这一行代替了你原来的 ObjectMapper 写入文件
-        animeRepository.save(anime);
-
+        // 1. 先去数据库查一下有没有同名的
         if (animeRepository.existsByTitle(anime.getTitle())) {
             throw new RuntimeException("添加失败：动漫《" + anime.getTitle() + "》已在库中。");
         }
+        // 2. 确定没有同名的，再执行保存
         animeRepository.save(anime);
     }
     public void delete(Long id) {
