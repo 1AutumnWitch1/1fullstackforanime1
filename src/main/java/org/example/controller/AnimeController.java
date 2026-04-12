@@ -1,6 +1,7 @@
 package org.example.controller;
 
 import org.example.model.Anime;
+import org.example.model.User;
 import org.example.serve.AnimeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -51,7 +52,22 @@ public class AnimeController {
             return "操作失败：" + e.getMessage();
         }
     }
-
-
+    @PostMapping("/register")
+    public String register(@RequestBody User user) {
+        try {
+            // 调用 Service 层的注册函数
+            animeService.registerUser(user);
+            return "注册成功！";
+        } catch (RuntimeException e) {
+            // 返回具体的错误信息（如：用户名已存在）
+            return e.getMessage();
+        }
+    }
+    @PostMapping("/login")
+    public User login(@RequestBody User loginReq) {
+        // 调用 Service 层的登录函数进行校验
+        // 如果校验通过，返回包含角色（role）的用户对象给前端
+        return animeService.login(loginReq.getUsername(), loginReq.getPassword());
+    }
 
 }
