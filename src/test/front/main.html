@@ -15,7 +15,6 @@
         <span class="welcome">欢迎, {{ currentUser.username }}
           <b :class="currentUser.role">[{{ roleText }}]</b>
         </span>
-        <button v-if="currentUser.role === 'ADMIN'" class="admin-btn" @click="showAdminPanel = true">管理后台</button>
         <button @click="logout" class="logout-btn">退出</button>
       </template>
       <button v-else @click="openLoginModal" class="login-btn">登录 / 注册</button>
@@ -34,6 +33,7 @@
              @click="selectedAnime = item">
           <span class="title">{{ item.title }}</span>
           <span class="score">{{ item.lovepoint }}</span>
+          <span v-if="item.status === 'PENDING'" class="pending-tag">待审</span>
         </div>
       </div>
     </aside>
@@ -46,11 +46,15 @@
         </div>
         <hr>
         <div class="detail-body">
+          <p><strong>状态：</strong> {{ selectedAnime.status }}</p>
+          <p><strong>申请人：</strong> {{ selectedAnime.applicant || '系统预置' }}</p>
           <h4>剧情简介：</h4>
           <p>{{ selectedAnime.description || '暂无详细描述。' }}</p>
         </div>
+
         <div v-if="currentUser?.role === 'ADMIN'" class="admin-actions">
-          <button class="delete-btn" @click="deleteAnime(selectedAnime.id)">下架该动漫</button>
+          <button v-if="selectedAnime.status === 'PENDING'" class="approve-btn" @click="approveAnime(selectedAnime.id)">通过审批</button>
+          <button class="delete-btn" @click="deleteAnime(selectedAnime.id)">下架/拒绝</button>
         </div>
       </div>
       <div v-else class="empty-state">
@@ -62,25 +66,34 @@
   <div v-if="showLoginModal" class="modal-overlay">
     <div class="modal">
       <h3>{{ isLogin ? '系统登录' : '新用户注册' }}</h3>
-
       <div class="form-group">
         <input v-model="loginForm.username" placeholder="请输入账号">
         <input type="password" v-model="loginForm.password" placeholder="请输入密码">
         <input v-if="!isLogin" type="password" v-model="loginForm.rePassword" placeholder="请再次输入密码">
       </div>
-
       <div class="modal-btns">
         <button @click="isLogin ? handleLogin() : handleRegister()" class="primary-btn">
           {{ isLogin ? '确认登录' : '立即注册' }}
         </button>
         <button @click="showLoginModal = false" class="cancel-btn">取消</button>
       </div>
-
       <div class="switch-mode">
-        <span>{{ isLogin ? '还没有账号？' : '已有账号？' }}</span>
-        <a href="#" @click.prevent="isLogin = !isLogin">
-          {{ isLogin ? '现在注册' : '返回登录' }}
-        </a>
+        <a href="#" @click.prevent="isLogin = !isLogin">{{ isLogin ? '还没有账号？现在注册' : '已有账号？返回登录' }}</a>
+      </div>
+    </div>
+  </div>
+
+  <div v-if="showAddModal" class="modal-overlay">
+    <div class="modal">
+      <h3>{{ currentUser?.role === 'ADMIN' ? '直接入库' : '申请加入新动漫' }}</h3>
+      <div class="form-group">
+        <input v-model="newAnime.title" placeholder="动漫名称">
+        <input v-model="newAnime.lovepoint" type="number" placeholder="推荐指数">
+        <textarea v-model="newAnime.description" placeholder="剧情简介"></textarea>
+      </div>
+      <div class="modal-btns">
+        <button @click="submitAnime" class="primary-btn">提交</button>
+        <button @click="showAddModal = false" class="cancel-btn">取消</button>
       </div>
     </div>
   </div>
