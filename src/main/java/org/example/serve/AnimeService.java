@@ -24,10 +24,11 @@ public class AnimeService {
 
     @PostConstruct
     public void initAdmin() {
+        // 因为 username 是主键，我们用 existsById 检查
         if (!userRepository.existsById("Autumn")) {
             User admin = new User("Autumn", "Witch", "ADMIN");
             userRepository.save(admin);
-            System.out.println(">>> 管理员 Autumn 已初始化就位！");
+            System.out.println(">>> 管理员 Autumn 已初始化！");
         }
     }
 
