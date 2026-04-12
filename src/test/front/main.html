@@ -12,13 +12,13 @@
     <div class="logo">🎬 AnimeHub <span class="tag">Alpha</span></div>
     <div class="user-area">
       <template v-if="currentUser">
-                <span class="welcome">欢迎, {{ currentUser.username }}
-                    <b :class="currentUser.role">[{{ roleText }}]</b>
-                </span>
-        <button v-if="currentUser.role === 'admin'" class="admin-btn" @click="showAdminPanel = true">管理后台</button>
+        <span class="welcome">欢迎, {{ currentUser.username }}
+          <b :class="currentUser.role">[{{ roleText }}]</b>
+        </span>
+        <button v-if="currentUser.role === 'ADMIN'" class="admin-btn" @click="showAdminPanel = true">管理后台</button>
         <button @click="logout" class="logout-btn">退出</button>
       </template>
-      <button v-else @click="showLoginModal = true" class="login-btn">登录 / 注册</button>
+      <button v-else @click="openLoginModal" class="login-btn">登录 / 注册</button>
     </div>
   </nav>
 
@@ -29,8 +29,7 @@
         <button v-if="currentUser" class="add-btn-sm" @click="showAddModal = true">+</button>
       </div>
       <div class="list-wrapper">
-        <div v-for="item in animes"
-             :key="item.id"
+        <div v-for="item in animes" :key="item.id"
              :class="['sidebar-item', { active: selectedAnime?.id === item.id }]"
              @click="selectedAnime = item">
           <span class="title">{{ item.title }}</span>
@@ -50,12 +49,11 @@
           <h4>剧情简介：</h4>
           <p>{{ selectedAnime.description || '暂无详细描述。' }}</p>
         </div>
-        <div v-if="currentUser?.role === 'admin'" class="admin-actions">
+        <div v-if="currentUser?.role === 'ADMIN'" class="admin-actions">
           <button class="delete-btn" @click="deleteAnime(selectedAnime.id)">下架该动漫</button>
         </div>
       </div>
       <div v-else class="empty-state">
-        <img src="https://via.placeholder.com/150?text=Anime" alt="empty">
         <p>点击左侧列表查看详细信息</p>
       </div>
     </main>
@@ -63,12 +61,26 @@
 
   <div v-if="showLoginModal" class="modal-overlay">
     <div class="modal">
-      <h3>系统登录</h3>
-      <input v-model="loginForm.username" placeholder="账号 (输入 admin 体验管理员)">
-      <input type="password" v-model="loginForm.password" placeholder="密码">
+      <h3>{{ isLogin ? '系统登录' : '新用户注册' }}</h3>
+
+      <div class="form-group">
+        <input v-model="loginForm.username" placeholder="请输入账号">
+        <input type="password" v-model="loginForm.password" placeholder="请输入密码">
+        <input v-if="!isLogin" type="password" v-model="loginForm.rePassword" placeholder="请再次输入密码">
+      </div>
+
       <div class="modal-btns">
-        <button @click="handleLogin">确认登录</button>
-        <button @click="showLoginModal = false">取消</button>
+        <button @click="isLogin ? handleLogin() : handleRegister()" class="primary-btn">
+          {{ isLogin ? '确认登录' : '立即注册' }}
+        </button>
+        <button @click="showLoginModal = false" class="cancel-btn">取消</button>
+      </div>
+
+      <div class="switch-mode">
+        <span>{{ isLogin ? '还没有账号？' : '已有账号？' }}</span>
+        <a href="#" @click.prevent="isLogin = !isLogin">
+          {{ isLogin ? '现在注册' : '返回登录' }}
+        </a>
       </div>
     </div>
   </div>

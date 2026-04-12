@@ -3,65 +3,82 @@ const { createApp, ref, onMounted, computed } = Vue;
 createApp({
     setup() {
         const apiBase = "http://localhost:8080/animes";
+        const userApi = "http://localhost:8080/users"; // 对应你后端的 UserController
 
-        // 数据状态
         const animes = ref([]);
         const selectedAnime = ref(null);
         const currentUser = ref(JSON.parse(localStorage.getItem('user') || 'null'));
 
         // UI 状态
         const showLoginModal = ref(false);
-        const showAddModal = ref(false);
-        const loginForm = ref({ username: '', password: '' });
+        const isLogin = ref(true); // 切换登录/注册
+        const loginForm = ref({ username: '', password: '', rePassword: '' });
 
         const roleText = computed(() => {
             if (!currentUser.value) return '游客';
-            return currentUser.value.role === 'admin' ? '系统管理员' : '正式会员';
+            return currentUser.value.role === 'ADMIN' ? '系统管理员' : '正式会员';
         });
 
-        // 获取数据
         const fetchAnimes = async () => {
             try {
-                const res = await axios.get(apiBase);
+                // 根据身份请求不同的数据
+                const roleParam = currentUser.value ? `?role=${currentUser.value.role}` : '';
+                const res = await axios.get(`${apiBase}${roleParam}`);
                 animes.value = res.data;
-                // 默认选中第一个
-                if (animes.value.length > 0 && !selectedAnime.value) {
-                    selectedAnime.value = animes.value[0];
-                }
-            } catch (e) { alert("后端连接失败"); }
+            } catch (e) { console.error("数据加载失败"); }
         };
 
-        // 登录模拟
-        const handleLogin = () => {
-            if (loginForm.value.username === 'admin') {
-                currentUser.value = { username: 'YYW', role: 'admin' };
-            } else {
-                currentUser.value = { username: loginForm.value.username, role: 'user' };
+        // 注册逻辑
+        const handleRegister = async () => {
+            if (loginForm.value.password !== loginForm.value.rePassword) {
+                alert("两次密码输入不一致！");
+                return;
             }
-            localStorage.setItem('user', JSON.stringify(currentUser.value));
-            showLoginModal.value = false;
+            try {
+                await axios.post(`${userApi}/register`, {
+                    username: loginForm.value.username,
+                    password: loginForm.value.password
+                });
+                alert("注册成功！请登录");
+                isLogin.value = true; // 注册成功跳回登录页
+            } catch (e) {
+                alert(e.response?.data || "注册失败，用户名可能已存在");
+            }
+        };
+
+        // 登录逻辑
+        const handleLogin = async () => {
+            try {
+                const res = await axios.post(`${userApi}/login`, {
+                    username: loginForm.value.username,
+                    password: loginForm.value.password
+                });
+                currentUser.value = res.data;
+                localStorage.setItem('user', JSON.stringify(currentUser.value));
+                showLoginModal.value = false;
+                fetchAnimes(); // 登录后刷新列表（管理员能看到待审批）
+            } catch (e) {
+                alert("登录失败，请检查账号密码");
+            }
         };
 
         const logout = () => {
             currentUser.value = null;
             localStorage.removeItem('user');
-            selectedAnime.value = null;
             fetchAnimes();
         };
 
-        const deleteAnime = async (id) => {
-            if (!confirm("确定下架吗？")) return;
-            await axios.delete(`${apiBase}/${id}`);
-            selectedAnime.value = null;
-            fetchAnimes();
+        const openLoginModal = () => {
+            isLogin.value = true;
+            showLoginModal.value = true;
         };
 
         onMounted(fetchAnimes);
 
         return {
             animes, selectedAnime, currentUser, roleText,
-            showLoginModal, loginForm, handleLogin, logout,
-            deleteAnime
+            showLoginModal, isLogin, loginForm,
+            handleLogin, handleRegister, logout, openLoginModal
         };
     }
 }).mount('#app');
