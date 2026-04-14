@@ -82,3 +82,209 @@ button:hover { background-color: #45a049; }
 }
 
 .delete-btn:hover { background-color: #ff6b81; }
+/* 评论区整体容器 */
+.comments-section {
+    margin-top: 30px;
+    padding: 20px;
+    background: #252525; /* 换成深灰色背景 */
+    border-radius: 12px;
+    border: 1px solid #333;
+}
+
+/* 评论输入框容器 */
+.comment-form {
+    background: #1e1e1e; /* 输入区更深一点 */
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    border: 1px solid #444;
+}
+
+/* 文本域样式 */
+.comment-form textarea {
+    width: 100%;
+    background: #2c2c2c;
+    color: #eee;
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 12px;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.comment-form textarea:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0,123,255,0.3);
+}
+
+/* 评论条目样式 */
+.comment-item {
+    background: #2a2a2a;
+    border-left: 4px solid #007bff; /* 加个蓝边增加高级感 */
+    margin-bottom: 12px;
+    padding: 12px 15px;
+    border-radius: 4px;
+}
+
+.comment-user-info {
+    color: #bbb;
+    font-size: 0.9em;
+    margin-bottom: 5px;
+}
+
+.comment-content {
+    color: #ddd;
+    line-height: 1.5;
+}
+
+/* 评分数字输入框 */
+.score-input input {
+    background: #333;
+    color: #fff;
+    border: 1px solid #555;
+    padding: 3px 8px;
+    border-radius: 4px;
+    width: 60px;
+}
+.anime-detail {
+    background: #1a1a1a;
+    color: #e0e0e0;
+    padding: 25px;
+    border-radius: 12px;
+}
+
+.empty-comments {
+    color: #666;
+    text-align: center;
+    padding: 20px;
+}
+
+
+/* ==============================
+   评价与讨论区 - 深度暗黑重塑
+   ============================== */
+
+/* 1. 评论区整体背景容器 */
+.comments-section {
+    margin-top: 40px;
+    background-color: #1a1a1a; /* 改为深灰背景 */
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid #2a2a2a;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+.comments-section h3 {
+    color: #4CAF50;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+}
+
+/* 2. 发表评论的输入框区域 */
+.comment-form-box {
+    background-color: #222; /* 比大背景略亮 */
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #333;
+    margin-bottom: 30px;
+    transition: 0.3s;
+}
+
+.comment-form-box:focus-within {
+    border-color: #4facfe; /* 聚焦时淡淡蓝光 */
+    box-shadow: 0 0 8px rgba(79, 172, 254, 0.2);
+}
+
+.comment-form-box textarea {
+    width: 100%;
+    height: 90px;
+    background: transparent;
+    border: none;
+    color: #e0e0e0;
+    font-size: 1rem;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+}
+
+.comment-form-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #333;
+    padding-top: 12px;
+}
+
+.score-input {
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.score-input input {
+    background-color: #111;
+    border: 1px solid #444;
+    color: #f1c40f;
+    padding: 5px 8px;
+    border-radius: 4px;
+    width: 55px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* 3. 评论列表卡片样式 */
+.comment-card {
+    background-color: #222;
+    border: 1px solid #2a2a2a;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.comment-card:hover {
+    background-color: #282828;
+    transform: translateX(5px); /* 悬停轻微右移 */
+}
+
+.comment-user-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #2d2d2d;
+    padding-bottom: 5px;
+}
+
+.user-name {
+    color: #4facfe; /* 用户名为科技蓝 */
+    font-weight: 600;
+}
+
+.user-score {
+    color: #f1c40f; /* 评分为亮黄色 */
+    font-weight: bold;
+    font-size: 0.95rem;
+}
+
+.comment-content {
+    color: #ccc;
+    line-height: 1.6;
+    margin: 8px 0 0 0;
+    font-size: 0.95rem;
+}
+
+/* 4. 无评论状态提示 */
+.empty-comments {
+    text-align: center;
+    color: #555;
+    padding: 30px;
+    font-style: italic;
+}
+
+.hint-text {
+    text-align: center;
+    color: #888;
+    padding: 15px;
+    background: #222;
+    border-radius: 8px;
+}

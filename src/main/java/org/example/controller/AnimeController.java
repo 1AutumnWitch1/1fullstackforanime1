@@ -1,7 +1,7 @@
 package org.example.controller;
 
 import org.example.model.Anime;
-import org.example.model.User;
+import org.example.model.Comment;
 import org.example.serve.AnimeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -16,23 +16,50 @@ public class AnimeController {
     @Autowired
     private AnimeService animeService;
 
-    // --- 修改点 1：获取列表支持角色过滤 ---
-    // @RequestParam 表示从 URL 后面拿参数，例如 /animes?role=ADMIN
+    /**
+     * 获取可见列表
+     * GET /animes?role=ADMIN
+     */
     @GetMapping
     public List<Anime> getAllAnimes(@RequestParam(required = false) String role) {
-        // 将前端传来的角色（可能是 null）交给 Service
         return animeService.getVisibleAnimes(role);
     }
 
-    // --- 修改点 2：用户提交申请接口 ---
-    // 专门给普通用户用的，会自动设置为 PENDING 状态
+    /**
+     * 用户提交申请（新增异常捕获，拦截游客）
+     * POST /animes/apply?username=Autumn
+     */
     @PostMapping("/apply")
-    public Anime applyAnime(@RequestBody Anime newAnime, @RequestParam String username) {
-        return animeService.applyAnime(newAnime, username);
+    public Object applyAnime(@RequestBody Anime newAnime, @RequestParam(required = false) String username) {
+        try {
+            return animeService.applyAnime(newAnime, username);
+        } catch (RuntimeException e) {
+            // 返回错误信息给前端，而不是直接崩溃
+            return e.getMessage();
+        }
     }
 
-    // --- 修改点 3：管理员审批通过接口 ---
-    // 使用 @PutMapping 表示修改状态
+    /**
+     * 【核心新增】发表评论并打分接口
+     * POST /animes/{id}/comment?username=Autumn
+     */
+    @PostMapping("/{id}/comment")
+    public String addComment(
+            @PathVariable Long id,
+            @RequestBody Comment comment,
+            @RequestParam(required = false) String username) {
+        try {
+            animeService.addComment(id, comment, username);
+            return "评论成功！平均分已更新。";
+        } catch (RuntimeException e) {
+            return "评价失败：" + e.getMessage();
+        }
+    }
+
+    /**
+     * 管理员审批通过
+     * PUT /animes/{id}/approve?role=ADMIN
+     */
     @PutMapping("/{id}/approve")
     public String approveAnime(@PathVariable Long id, @RequestParam String role) {
         if (!"ADMIN".equalsIgnoreCase(role)) {
@@ -42,7 +69,10 @@ public class AnimeController {
         return "审批成功！该动漫已正式上线。";
     }
 
-    // --- 修改点 4：带权限验证的删除 ---
+    /**
+     * 带权限验证的删除/拒绝
+     * DELETE /animes/{id}?role=ADMIN
+     */
     @DeleteMapping("/{id}")
     public String deleteAnime(@PathVariable Long id, @RequestParam String role) {
         try {
@@ -52,6 +82,4 @@ public class AnimeController {
             return "操作失败：" + e.getMessage();
         }
     }
-
-
 }

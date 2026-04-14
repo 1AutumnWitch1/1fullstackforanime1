@@ -1,30 +1,34 @@
 package org.example.serve;
+
 import jakarta.annotation.PostConstruct;
 import org.example.model.Anime;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.example.model.Comment;
 import org.example.model.User;
 import org.example.repository.AnimeRepository;
+import org.example.repository.CommentRepository;
 import org.example.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.example.controller.AnimeController;
-import java.io.IOException;
-import java.nio.file.*;
-import java.util.*;
-import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class AnimeService {
-    @Autowired // 目的：自动注入仓库实例，不需要你 new
+
+    @Autowired
     private AnimeRepository animeRepository;
+
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private CommentRepository commentRepository;
+
+
     @PostConstruct
     public void initAdmin() {
-        // 因为 username 是主键，我们用 existsById 检查
         if (!userRepository.existsById("Autumn")) {
             User admin = new User("Autumn", "Witch", "ADMIN");
             userRepository.save(admin);
@@ -32,76 +36,105 @@ public class AnimeService {
         }
     }
 
-    public List<Anime> getVisibleAnimes(String role) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "lovepoint");
 
-        // 如果是管理员，看到所有（包括 PENDING 状态的申请）
+    public List<Anime> getVisibleAnimes(String role) {
+        // 按照新的平均分字段降序排列
+        Sort sort = Sort.by(Sort.Direction.DESC, "averageLovepoint");
+
         if ("ADMIN".equalsIgnoreCase(role)) {
             return animeRepository.findAll(sort);
         }
 
-        // 游客（role为null）或普通用户，只能看到 APPROVED 状态的动漫
-        // 这行代码需要 AnimeRepository 中有 findByStatus 方法支持
         return animeRepository.findByStatus("APPROVED", sort);
     }
 
+
     public Anime applyAnime(Anime anime, String username) {
-        anime.setStatus("PENDING"); // 强制设为申请中
-        anime.setApplicant(username); // 记录申请人
+        // 1. 权限校验：如果 username 为空，说明是游客，直接拒绝
+        if (username == null || username.isEmpty() || "GUEST".equalsIgnoreCase(username)) {
+            throw new RuntimeException("申请失败：请先登录后再提交申请！");
+        }
+
+        anime.setStatus("PENDING");
+        anime.setApplicant(username);
+        anime.setAverageLovepoint(0.0);
         return animeRepository.save(anime);
     }
 
-    public void approveAnime(Long id) {
-        Anime anime = animeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("找不到该申请"));
-        anime.setStatus("APPROVED"); // 变更状态为已通过
+
+    @Transactional // 保证评论保存和分数更新在同一个事务中
+    public void addComment(Long animeId, Comment comment, String currentUsername) {
+        // 1. 权限校验：拦截游客
+        if (currentUsername == null || currentUsername.isEmpty()) {
+            throw new RuntimeException("操作失败：只有登录用户才能参与评论打分！");
+        }
+
+        // 2. 获取动漫
+        Anime anime = animeRepository.findById(animeId)
+                .orElseThrow(() -> new RuntimeException("找不到该动漫"));
+
+        // 3. 检查状态
+        if (!"APPROVED".equalsIgnoreCase(anime.getStatus())) {
+            throw new RuntimeException("该动漫未通过审核，无法评论");
+        }
+
+        // 4. 设置评论信息
+        comment.setAnime(anime);
+        comment.setAuthor(currentUsername); // 强制使用当前登录的用户名，防止伪造
+        commentRepository.save(comment);
+
+        // 5. 重新计算平均分
+        List<Comment> allComments = commentRepository.findByAnimeId(animeId);
+        double avg = allComments.stream()
+                .mapToInt(Comment::getScore)
+                .average()
+                .orElse(0.0);
+
+        anime.setAverageLovepoint(avg);
         animeRepository.save(anime);
     }
 
+    /**
+     * 管理员：审核通过动漫
+     */
+    public void approveAnime(Long id) {
+        Anime anime = animeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("找不到该申请"));
+        anime.setStatus("APPROVED");
+        animeRepository.save(anime);
+    }
+
+    /**
+     * 管理员：删除动漫或拒绝申请
+     */
     public void deleteWithAuth(Long id, String role) {
         if (!"ADMIN".equalsIgnoreCase(role)) {
-            throw new RuntimeException("只有管理员可以删除或拒绝动漫！");
+            throw new RuntimeException("只有管理员可以执行此操作！");
         }
         animeRepository.deleteById(id);
     }
 
     /**
-     * 处理用户注册逻辑
-     * @param user 包含前端传来的用户名和密码
-     * @return 保存后的用户对象
+     * 用户注册
      */
     public User registerUser(User user) {
-        // 1. 安全校验：检查用户名是否已存在
-        // 这里使用 userRepository 的 existsById (因为 username 是主键 @Id)
-        if (userRepository.existsById(user.getUsername())) {
+        // 改用 existsByUsername，这是你在 Repository 里明确定义的方法
+        if (userRepository.existsByUsername(user.getUsername())) {
             throw new RuntimeException("注册失败：用户名「" + user.getUsername() + "」已被占用。");
         }
-
-        // 2. 权限锁定：强制设置为普通用户角色
-        // 防止黑客通过前端接口直接伪造 "ADMIN" 身份注册
         user.setRole("USER");
-
-        // 3. 执行保存
         return userRepository.save(user);
     }
 
     /**
-     * 处理登录验证逻辑
-     * @param username 用户名
-     * @param password 密码
-     * @return 验证通过的用户对象
+     * 用户登录
      */
     public User login(String username, String password) {
-        // 1. 查找用户
         User user = userRepository.findById(username)
                 .orElseThrow(() -> new RuntimeException("登录失败：用户不存在。"));
-
-        // 2. 验证密码 (注：实际项目建议使用 BCrypt 加密，这里先用明文对比)
         if (!user.getPassword().equals(password)) {
             throw new RuntimeException("登录失败：密码错误。");
         }
-
         return user;
     }
-
 }

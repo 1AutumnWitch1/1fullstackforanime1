@@ -2,7 +2,8 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>Anime Admin Pro - 动漫管理系统</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AnimeHub Pro - 动漫管理系统</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -32,7 +33,7 @@
              :class="['sidebar-item', { active: selectedAnime?.id === item.id }]"
              @click="selectedAnime = item">
           <span class="title">{{ item.title }}</span>
-          <span class="score">{{ item.lovepoint }}</span>
+          <span class="score">⭐ {{ item.averageLovepoint.toFixed(1) }}</span>
           <span v-if="item.status === 'PENDING'" class="pending-tag">待审</span>
         </div>
       </div>
@@ -42,23 +43,58 @@
       <div v-if="selectedAnime" class="anime-detail">
         <div class="detail-header">
           <h2>{{ selectedAnime.title }}</h2>
-          <span class="love-badge">❤️ {{ selectedAnime.lovepoint }} 点</span>
+          <span class="love-badge">综合评分：{{ selectedAnime.averageLovepoint.toFixed(1) }}</span>
         </div>
-        <hr>
+        <hr class="divider">
+
         <div class="detail-body">
-          <p><strong>状态：</strong> {{ selectedAnime.status }}</p>
-          <p><strong>申请人：</strong> {{ selectedAnime.applicant || '系统预置' }}</p>
+          <div class="meta-info">
+            <p><strong>状态：</strong> <span :class="['status-tag', selectedAnime.status]">{{ selectedAnime.status }}</span></p>
+            <p><strong>申请人：</strong> <span class="applicant-name">{{ selectedAnime.applicant || '系统预置' }}</span></p>
+          </div>
           <h4>剧情简介：</h4>
-          <p>{{ selectedAnime.description || '暂无详细描述。' }}</p>
+          <p class="description-text">{{ selectedAnime.description || '暂无详细描述。' }}</p>
         </div>
 
         <div v-if="currentUser?.role === 'ADMIN'" class="admin-actions">
           <button v-if="selectedAnime.status === 'PENDING'" class="approve-btn" @click="approveAnime(selectedAnime.id)">通过审批</button>
           <button class="delete-btn" @click="deleteAnime(selectedAnime.id)">下架/拒绝</button>
         </div>
+
+        <section class="comments-section">
+          <h3>💬 评价与讨论</h3>
+
+          <div v-if="currentUser && selectedAnime.status === 'APPROVED'" class="comment-form-box">
+            <textarea v-model="commentForm.content" class = "modern-textarea"placeholder="分享你的观看体验..."></textarea>
+            <div class="comment-form-footer">
+              <div class="score-input">1
+                <span>评分：</span>
+                <input type="number" v-model.number="commentForm.score" min="1" max="10" class = "ap-btn">
+                <small>(1-100分)</small>
+              </div>
+              <button @click="postComment" class="approve-btn">提交评价</button>
+            </div>
+          </div>
+          <p v-else-if="!currentUser" class="hint-text">请登录后参与评分讨论</p>
+
+          <div class="comment-list">
+            <div v-for="c in selectedAnime.comments" :key="c.id" class="comment-card">
+              <div class="comment-user-info">
+                <span class="user-name">👤 {{ c.author }}</span>
+                <span class="user-score">★ {{ c.score }}分</span>
+              </div>
+              <p class="comment-content">{{ c.content }}</p>
+            </div>
+            <div v-if="!selectedAnime.comments || selectedAnime.comments.length === 0" class="empty-comments">
+              还没有评论，快来抢占沙发吧！
+            </div>
+          </div>
+        </section>
       </div>
+
       <div v-else class="empty-state">
-        <p>点击左侧列表查看详细信息</p>
+        <div class="empty-icon">📺</div>
+        <p>从左侧目录选择一部动漫查看详情</p>
       </div>
     </main>
   </div>
@@ -78,7 +114,9 @@
         <button @click="showLoginModal = false" class="cancel-btn">取消</button>
       </div>
       <div class="switch-mode">
-        <a href="#" @click.prevent="isLogin = !isLogin">{{ isLogin ? '还没有账号？现在注册' : '已有账号？返回登录' }}</a>
+        <a href="#" @click.prevent="isLogin = !isLogin">
+          {{ isLogin ? '还没有账号？现在注册' : '已有账号？返回登录' }}
+        </a>
       </div>
     </div>
   </div>
@@ -88,11 +126,10 @@
       <h3>{{ currentUser?.role === 'ADMIN' ? '直接入库' : '申请加入新动漫' }}</h3>
       <div class="form-group">
         <input v-model="newAnime.title" placeholder="动漫名称">
-        <input v-model="newAnime.lovepoint" type="number" placeholder="推荐指数">
-        <textarea v-model="newAnime.description" placeholder="剧情简介"></textarea>
+        <textarea v-model="newAnime.description" class="modal-textarea" placeholder="请输入剧情简介..."></textarea>>
       </div>
       <div class="modal-btns">
-        <button @click="submitAnime" class="primary-btn">提交</button>
+        <button @click="submitAnime" class="primary-btn">提交申请</button>
         <button @click="showAddModal = false" class="cancel-btn">取消</button>
       </div>
     </div>
