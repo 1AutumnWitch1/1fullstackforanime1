@@ -57,6 +57,24 @@ public class AnimeController {
     }
 
     /**
+     * 【新增】管理员修改封面接口
+     * PUT /animes/{id}/cover?coverUrl=xxx&role=ADMIN
+     */
+    @PutMapping("/{id}/cover")
+    public String updateCover(
+            @PathVariable Long id,
+            @RequestParam String coverUrl,
+            @RequestParam String role) {
+        try {
+            animeService.updateCover(id, coverUrl, role);
+            return "封面更新成功！";
+        } catch (RuntimeException e) {
+            // 如果 Service 报错（比如不是管理员），这里会抓住并返回给前端
+            return "更新失败：" + e.getMessage();
+        }
+    }
+
+    /**
      * 管理员审批通过
      * PUT /animes/{id}/approve?role=ADMIN
      */

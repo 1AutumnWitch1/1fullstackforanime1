@@ -47,7 +47,19 @@ public class AnimeService {
 
         return animeRepository.findByStatus("APPROVED", sort);
     }
+    public void updateCover(Long id, String newCoverUrl, String role) {
+        // 1. 权限校验
+        if (!"ADMIN".equalsIgnoreCase(role)) {
+            throw new RuntimeException("操作失败：只有管理员可以修改封面！");
+        }
 
+        // 2. 获取并更新
+        Anime anime = animeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("找不到该动漫"));
+
+        anime.setCoverUrl(newCoverUrl);
+        animeRepository.save(anime);
+    }
 
     public Anime applyAnime(Anime anime, String username) {
         // 1. 权限校验：如果 username 为空，说明是游客，直接拒绝

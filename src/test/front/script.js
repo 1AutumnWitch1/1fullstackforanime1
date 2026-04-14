@@ -3,21 +3,20 @@ const { createApp, ref, computed, onMounted } = Vue;
 createApp({
     setup() {
         const apiBase = "http://localhost:8080/animes";
+        const defaultPlaceholder = "data:image/svg+xml;charset=UTF-8,%3Csvg width='800' height='450' viewBox='0 0 800 450' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%231a1a1a;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%230f0f0f;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='450' fill='url(%23g)' /%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='80' fill='%23333'%3E\uD83D\uDCFA%3C/text%3E%3Ctext x='50%25' y='65%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='20' fill='%23444'%3EAnimeHub Alpha%3C/text%3E%3C/svg%3E";
 
         // --- 状态数据 ---
         const animes = ref([]);
         const selectedAnime = ref(null);
         const currentUser = ref(JSON.parse(localStorage.getItem('user')) || null);
 
-        // 弹窗控制
         const showLoginModal = ref(false);
         const isLogin = ref(true);
         const showAddModal = ref(false);
 
-        // 表单数据
         const loginForm = ref({ username: '', password: '', rePassword: '' });
         const newAnime = ref({ title: '', description: '', lovepoint: 0 });
-        const commentForm = ref({ content: '', score: 10 }); // 新增评论表单
+        const commentForm = ref({ content: '', score: 10 });
 
         // 计算属性
         const roleText = computed(() => {
@@ -27,12 +26,30 @@ createApp({
 
         // --- 核心方法 ---
 
+        // 修改封面方法 (新)
+        const updateCoverDirectly = async () => {
+            if (!selectedAnime.value || !selectedAnime.value.coverUrl) {
+                return alert("请输入有效的图片链接");
+            }
+            try {
+                const res = await axios.put(`${apiBase}/${selectedAnime.value.id}/cover`, null, {
+                    params: {
+                        coverUrl: selectedAnime.value.coverUrl,
+                        role: currentUser.value.role
+                    }
+                });
+                alert(typeof res.data === 'string' ? res.data : "封面已更新");
+                fetchAnimes();
+            } catch (e) {
+                alert("修改失败：" + (e.response?.data || "请求异常"));
+            }
+        };
+
         const fetchAnimes = async () => {
             const role = currentUser.value ? currentUser.value.role : 'GUEST';
             try {
                 const res = await axios.get(`${apiBase}?role=${role}`);
                 animes.value = res.data;
-                // 如果当前选中的动漫在列表里，同步更新它的数据（比如新分数）
                 if (selectedAnime.value) {
                     selectedAnime.value = animes.value.find(a => a.id === selectedAnime.value.id);
                 }
@@ -47,8 +64,8 @@ createApp({
                     commentForm.value
                 );
                 alert(res.data);
-                commentForm.value = { content: '', score: 10 }; // 重置
-                fetchAnimes(); // 刷新列表和详情
+                commentForm.value = { content: '', score: 10 };
+                fetchAnimes();
             } catch (e) { alert("评价失败"); }
         };
 
@@ -75,7 +92,7 @@ createApp({
         };
 
         const deleteAnime = async (id) => {
-            if (!confirm("确定要删除/拒绝吗？")) return;
+            if (!confirm("确定要下架该内容吗？")) return;
             try {
                 const res = await axios.delete(`${apiBase}/${id}?role=${currentUser.value.role}`);
                 alert(res.data);
@@ -84,82 +101,56 @@ createApp({
             } catch (e) { alert("操作失败"); }
         };
 
-        // --- 登录/注册逻辑 (对接你的后端) ---
-        // --- 1. 登录逻辑 ---
         const handleLogin = async () => {
             try {
-                // 注意：这里要对应 UserController 的 @RequestMapping("/users") 和 @PostMapping("/login")
-                // 我们发送的是整个 loginForm 对象，后端用 @RequestBody 接收
                 const res = await axios.post(`http://localhost:8080/users/login`, {
                     username: loginForm.value.username,
                     password: loginForm.value.password
                 });
-
-                // 登录成功，后端返回的是 User 对象
                 currentUser.value = res.data;
-                localStorage.setItem('user', JSON.stringify(res.data)); // 持久化
+                localStorage.setItem('user', JSON.stringify(res.data));
                 showLoginModal.value = false;
-
-                // 登录后重置表单并刷新动漫列表（因为角色变了，看到的权限也变了）
                 loginForm.value = { username: '', password: '' };
                 fetchAnimes();
                 alert("欢迎回来，" + currentUser.value.username);
             } catch (e) {
-                // 如果后端 throw RuntimeException，消息通常在 e.response.data 中
-                const errorMsg = e.response?.data || "登录失败：账号或密码错误";
-                alert(errorMsg);
+                alert(e.response?.data || "登录失败");
             }
         };
 
-// --- 2. 注册逻辑 (补全) ---
         const handleRegister = async () => {
-            // 1. 校验密码
-            if (!loginForm.value.username || !loginForm.value.password) {
-                alert("请填写完整的账号和密码！");
-                return;
-            }
-            if (loginForm.value.password !== loginForm.value.rePassword) {
-                alert("两次输入的密码不一致！");
-                return;
-            }
-
+            if (!loginForm.value.username || !loginForm.value.password) return alert("请填写完整信息");
+            if (loginForm.value.password !== loginForm.value.rePassword) return alert("两次密码不一致");
             try {
-                // 2. 发送请求：只发送后端 User 类需要的字段
                 const res = await axios.post(`http://localhost:8080/users/register`, {
                     username: loginForm.value.username,
                     password: loginForm.value.password
                 });
-
-                // 3. 处理结果
-                // res.data 就是后端 return 的那个字符串
                 alert(res.data);
-
                 if (res.data === "注册成功！") {
-                    isLogin.value = true; // 切换到登录模式
-                    loginForm.value.password = ''; // 清空密码框
-                    loginForm.value.rePassword = '';
+                    isLogin.value = true;
+                    loginForm.value.password = '';
                 }
             } catch (e) {
-                // 捕获后端的 throw RuntimeException
                 alert("注册失败：" + (e.response?.data || "服务器繁忙"));
             }
         };
 
-// --- 3. 退出逻辑 ---
         const logout = () => {
             currentUser.value = null;
-            localStorage.removeItem('user'); // 清除缓存
-            selectedAnime.value = null;      // 清空当前选中的动漫，防止权限残留
-            fetchAnimes();                   // 刷新为游客视角
-            alert("已安全退出");
+            localStorage.removeItem('user');
+            selectedAnime.value = null;
+            fetchAnimes();
+            alert("已退出");
         };
 
         onMounted(fetchAnimes);
 
         return {
             animes, selectedAnime, currentUser, showLoginModal, isLogin, showAddModal,
-            loginForm, newAnime, commentForm, roleText,handleRegister,
+            loginForm, newAnime, commentForm, roleText, handleRegister, defaultPlaceholder,
             fetchAnimes, postComment, submitAnime, approveAnime, deleteAnime, handleLogin, logout,
+            updateCoverDirectly,
             openLoginModal: () => { isLogin.value = true; showLoginModal.value = true; }
         };
     }
