@@ -1,0 +1,351 @@
+/* ==============================
+   暗色模式全局重置 (Dark Mode Base)
+   ============================== */
+[v-cloak] { display: none; }
+
+body {
+    margin: 0;
+    font-family: -apple-system, "Noto Sans SC", sans-serif;
+    /* 背景变为深灰，与顶部导航呼应但略浅，拉开层次 */
+    background-color: #121212;
+    color: #e0e0e0; /* 文字变为浅灰，不刺眼 */
+}
+
+/* ==============================
+   1. 顶部导航栏 (TopNav) - 保持深黑
+   ============================== */
+.top-nav {
+    height: 60px;
+    background: #000000; /* 纯黑，最显眼 */
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.5); /* 强化阴影 */
+    position: relative;
+    z-index: 100;
+}
+
+.logo { font-size: 1.5rem; font-weight: bold; color: #4CAF50; /* 保持点缀绿 */ }
+
+.welcome { font-size: 0.9em; color: #aaa; margin-right: 15px; }
+.welcome b { font-weight: bold; }
+.admin { color: #ff6b81; /* 管理员用亮粉色醒目 */ }
+.user { color: #4CAF50; /* 普通用户用绿色 */ }
+
+/* ==============================
+   2. 主体布局 (Main Layout)
+   ============================== */
+.main-layout {
+    display: flex;
+    height: calc(100vh - 60px);
+    overflow: hidden;
+}
+
+/* ==============================
+   左侧：侧边栏 (Sidebar) - 深灰配色
+   ============================== */
+.sidebar {
+    width: 280px;
+    background-color: #1a1a1a; /* 与之前导航栏同色 */
+    border-right: 1px solid #333; /* 边框变暗 */
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #222; /* 头部略亮，拉开层次 */
+}
+
+.sidebar-header h3 { margin: 0; font-size: 1.1em; color: #fff; }
+
+.list-wrapper { overflow-y: auto; flex: 1; }
+
+/* 自定义滚动条样式，适配暗色 */
+.list-wrapper::-webkit-scrollbar { width: 6px; }
+.list-wrapper::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+
+/* 列表项样式 */
+.sidebar-item {
+    padding: 18px 20px;
+    cursor: pointer;
+    border-bottom: 1px solid #2a2a2a; /* 暗色分割线 */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+    color: #ccc;
+}
+
+/* 悬停效果：亮灰 */
+.sidebar-item:hover { background-color: #2a2a2a; color: #fff; }
+
+/* 选中效果：绿底白字，加左边框 */
+.sidebar-item.active {
+    background-color: #2e7d32; /* 深绿 */
+    border-left: 4px solid #81c784; /* 亮绿边框 */
+    color: white;
+    font-weight: bold;
+    padding-left: 16px; /* 补偿边框宽度 */
+}
+
+.sidebar-item .score {
+    font-size: 0.85em;
+    color: #999;
+}
+.sidebar-item.active .score { color: #e8f5e9; }
+
+/* ==============================
+   右侧：内容区 (Content Area) - 最深背景
+   ============================== */
+.content-area {
+    flex: 1;
+    padding: 50px;
+    background-color: #121212; /* 纯深灰，突出内容 */
+    overflow-y: auto;
+}
+
+/* 详情展示 */
+.anime-detail .detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.anime-detail h2 { font-size: 2.8rem; margin: 0; color: #fff; }
+
+.love-badge {
+    background-color: #ff4757;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.anime-detail hr { border: 0; border-top: 1px solid #333; margin: 30px 0; }
+
+.detail-body h4 { color: #81c784; margin-bottom: 10px; }
+.detail-body p {
+    line-height: 1.8;
+    color: #ddd;
+    font-size: 1.1rem;
+    white-space: pre-line; /* 保持换行 */
+}
+
+/* 管理员操作区 */
+.admin-actions { margin-top: 50px; padding-top: 20px; border-top: 1px solid #333; }
+
+/* ==============================
+   按钮与弹窗样式 (Buttons & Modals)
+   ============================== */
+button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+}
+.primary-btn {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); /* 渐变绿 */
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.primary-btn:hover {
+    background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%); /* 悬停时稍微变亮 */
+    box-shadow: 0 6px 12px rgba(76, 175, 80, 0.3); /* 绿色发光阴影 */
+    transform: translateY(-1px); /* 轻微上浮感 */
+}
+
+.primary-btn:active {
+    transform: translateY(1px); /* 点击按下效果 */
+}
+
+/* 旁边的取消按钮也微调一下，保持高度对齐但颜色低调 */
+.cancel-btn {
+    background-color: #333 !important; /* 深灰色 */
+    color: #bbb !important;
+    padding: 10px 24px;
+    font-size: 1rem;
+    border-radius: 6px;
+    transition: all 0.3s;
+}
+
+.cancel-btn:hover {
+    background-color: #444 !important;
+    color: #fff !important;
+}
+/* 统一定制各种按钮颜色 */
+.login-btn, .add-btn-sm { background-color: #4CAF50; color: white; }
+.login-btn:hover, .add-btn-sm:hover { background-color: #45a049; }
+.modern-textarea {
+    width: 100%;
+    height: 120px;
+    padding: 15px;
+    box-sizing: border-box; /* 确保 padding 不撑开宽度 */
+
+    /* 背景与文字 */
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+
+    /* 边框与圆角 */
+    border: 1px solid #333;
+    border-radius: 10px;
+
+    /* 字体设置 */
+    font-family: inherit;
+    font-size: 1rem;
+    line-height: 1.6;
+
+    /* 交互细节 */
+    resize: none; /* 禁止用户手动拉伸，保持 UI 整洁 */
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+/* 鼠标悬停时的状态 */
+.modern-textarea:hover {
+    border-color: #444;
+}
+
+/* 重点：点击输入时的发光效果 */
+.modern-textarea:focus {
+    background-color: #252525; /* 稍微变亮一点点 */
+    border-color: #4facfe;     /* 科技蓝边框 */
+    box-shadow: 0 0 12px rgba(79, 172, 254, 0.2); /* 淡淡的蓝色光晕 */
+}
+
+/* 占位符颜色微调 */
+.modern-textarea::placeholder {
+    color: #555;
+    font-size: 0.9rem;
+}
+.logout-btn { background-color: #444; color: #ccc; margin-left: 10px; }
+.logout-btn:hover { background-color: #555; color: #fff; }
+.approve-btn {
+    background-color: #2ecc71;
+    color: white;padding: 12px 24px; font-size: 1em;
+}
+.delete-btn { background-color: #ff4757; color: white; padding: 12px 24px; font-size: 1em; }
+.delete-btn:hover { background-color: #ff6b81; }
+
+/* 登录弹窗 - 深色适配 */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+}
+.modal {
+    background-color: #222;
+    padding: 30px;
+    border-radius: 8px;
+    width: 320px;
+    border: 1px solid #333;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+}
+.modal h3 { margin-top: 0; color: #fff; text-align: center; }
+.modal input {
+    width: 100%;
+    margin-bottom: 15px;
+    padding: 12px;
+    box-sizing: border-box;
+    background-color: #121212; /* 输入框更深 */
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: #fff;
+}
+.modal input:focus { border-color: #4CAF50; outline: none; }
+
+.modal-btns { display: flex; justify-content: space-between; margin-top: 20px; }
+.modal-btns button { width: 48%; }
+.modal-btns button:last-child { background-color: #444; color: #ccc; }
+
+/* ==============================
+   空状态展示 (Empty State)
+   ============================== */
+.empty-state {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100%; color: #666; text-align: center;
+}
+.ap-btn
+{
+    background-color: #78acef; color: white; padding: 12px 24px; font-size: 1em;
+}
+/* 弹窗专用大文本框 */
+.modal-textarea {
+    width: 100%;
+    height: 150px; /* 稍微高一点，方便输入长简介 */
+    padding: 12px 15px;
+    box-sizing: border-box;
+
+    /* 背景与文字：深色系 */
+    background-color: #121212;
+    color: #eee;
+
+    /* 边框：低调的深灰 */
+    border: 1px solid #333;
+    border-radius: 8px;
+
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    resize: vertical; /* 允许垂直拉伸，但不允许水平拉伸 */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+}
+
+/* 鼠标悬停 */
+.modal-textarea:hover {
+    border-color: #444;
+}
+
+/* 聚焦状态：极客绿发光 */
+.modal-textarea:focus {
+    background-color: #1a1a1a;
+    border-color: #4CAF50; /* 呼应你的 Logo 绿色 */
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.2);
+}
+
+/* 占位符颜色 */
+.modal-textarea::placeholder {
+    color: #555;
+}
+
+/* 自定义文本框内部滚动条 (适配暗色) */
+.modal-textarea::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-textarea::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 3px;
+}
+
+.modal-textarea::-webkit-scrollbar-thumb:hover {
+    background: #444;
+}
+.empty-state img { opacity: 0.2; margin-bottom: 20px; }
+.comments-section { margin-top: 40px; background: #3f4650; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.comment-form textarea { width: 100%; height: 80px; padding: 12px; border: 1px solid #30313a; border-radius: 8px; margin-bottom: 10px; resize: none; }
+.comment-form-footer { display: flex; justify-content: space-between; align-items: center; }
+.score-input input { width: 60px; padding: 5px; border-radius: 4px; border: 1px solid #3e3333; }
+.comment-item { border-bottom: 1px solid #4a3838; padding: 15px 0; }
+.comment-user-info { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: bold; }
+.user-score { color: #f39c12; }
+.empty-comments { text-align: center; color: #999; padding: 20px; }
