@@ -349,3 +349,78 @@ button {
 .comment-user-info { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: bold; }
 .user-score { color: #f39c12; }
 .empty-comments { text-align: center; color: #999; padding: 20px; }
+
+
+
+
+/* 状态标签样式 */
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.9em;
+    text-transform: uppercase;
+}
+
+.status-badge.APPROVED { background-color: #e6fffa; color: #38b2ac; border: 1px solid #b2f5ea; }
+.status-badge.PENDING { background-color: #fffaf0; color: #dd6b20; border: 1px solid #feebc8; }
+
+/* 管理员面板容器 */
+.admin-edit-panel {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #1a1a1a; /* 深色背景配合黑金风格 */
+    border: 1px dashed #444;
+    border-radius: 8px;
+}
+
+.edit-label {
+    display: block;
+    font-size: 0.85em;
+    color: #888;
+    margin-bottom: 8px;
+}
+
+/* 输入框组合 */
+.input-group {
+    display: flex;
+    gap: 10px;
+}
+
+.modern-input {
+    flex: 1; /* 占据剩余空间 */
+    padding: 8px 12px;
+    border: 1px solid #333;
+    border-radius: 6px;
+    background: #252525;
+    color: #fff;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.modern-input:focus {
+    border-color: #007bff;
+}
+
+/* 按钮样式提升 */
+.save-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    white-space: nowrap; /* 防止按钮文字换行 */
+    transition: all 0.2s;
+}
+
+.save-btn:hover {
+    background-color: #0056b3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.save-btn:active {
+    transform: translateY(0);
+}

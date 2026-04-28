@@ -12,10 +12,16 @@
         <div class="detail-body">
           <div style="display: flex; justify-content: space-between; gap: 20px;">
             <div class="meta-info">
-              <p>状态：<span :class="selectedAnime.status">{{ selectedAnime.status }}</span></p>
-              <div v-if="user?.role === 'ADMIN'" class="admin-edit">
-                <input v-model="selectedAnime.coverUrl">
-                <button @click="updateCover">保存封面</button>
+              <p class="status-row">
+                状态：<span :class="['status-badge', selectedAnime.status]">{{ selectedAnime.status }}</span>
+              </p>
+
+              <div v-if="user?.role === 'ADMIN'" class="admin-edit-panel">
+                <label class="edit-label">封面 URL</label>
+                <div class="input-group">
+                  <input v-model="selectedAnime.coverUrl" placeholder="输入图片链接..." class="modern-input">
+                  <button @click="updateCover" class="save-btn">保存封面</button>
+                </div>
               </div>
             </div>
             <img :src="selectedAnime.coverUrl" style="width:200px; border-radius:10px;">

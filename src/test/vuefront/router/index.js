@@ -1,24 +1,12 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 // 1. 引入你的页面组件
 import HomeView from '../views/HomeView.vue'
-
+import AdminView from '../views/AdminView.vue'
 // 2. 定义路径和组件的对应关系
 const routes = [
-    {
-        path: '/',
-        name: 'home',
-        component: HomeView
-    },
-    {
-        path: '/login',
-        name: 'login',
-        component: LoginView
-    },
-    {
-        path: '/admin',
-        name: 'admin',
-        component: AdminView
-    }
+    { path: '/', name: 'home', component: HomeView },
+    { path: '/admin', name: 'admin', component: AdminView }
+
 ]
 
 // 3. 创建路由实例

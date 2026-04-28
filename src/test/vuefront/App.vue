@@ -26,7 +26,10 @@
           <button @click="showLogin = false" class="cancel-btn">取消</button>
         </div>
         <div class="switch-mode">
-          <a @click="isLoginMode = !isLoginMode">{{ isLoginMode ? '还没有账号？现在注册' : '已有账号？返回登录' }}</a>
+          <a @click="isLoginMode = !isLoginMode"
+             style="color: #007bff; text-decoration: underline; cursor: pointer; font-weight: bold;">
+            {{ isLoginMode ? '还没有账号？现在注册' : '已有账号？返回登录' }}
+          </a>
         </div>
       </div>
     </div>
@@ -35,8 +38,9 @@
 
 <script setup>
 import { ref, provide } from 'vue';
+import { useRouter } from 'vue-router';
 import { animeApi } from './api/anime';
-
+const router = useRouter();
 const currentUser = ref(JSON.parse(localStorage.getItem('user')) || null);
 const showLogin = ref(false);
 const isLoginMode = ref(true);
@@ -49,16 +53,27 @@ const handleAuth = async () => {
   try {
     if (isLoginMode.value) {
       const res = await animeApi.login(authForm.value);
+      // 1. 更新内存状态
       currentUser.value = res.data;
+      // 2. 存入本地缓存（防止刷新掉线）
       localStorage.setItem('user', JSON.stringify(res.data));
-      showLogin.value = false;
-      location.reload(); // 刷新以同步状态
+
+      showLogin.value = false; // 关闭弹窗
+
+      // 3. 【关键：根据身份换 URL】
+      if (res.data.role === 'ADMIN') {
+        console.log("检测到管理员登录，正在前往后台...");
+        router.push('/admin'); // 自动跳到 /admin 路径
+      } else {
+        router.push('/'); // 普通用户跳回首页
+      }
+
     } else {
-      const res = await animeApi.register(authForm.value);
-      alert(res.data);
-      if (res.data === "注册成功！") isLoginMode.value = true;
+      // 注册逻辑...
     }
-  } catch (e) { alert(e.response?.data || "操作失败"); }
+  } catch (e) {
+    alert(e.response?.data || "操作失败");
+  }
 };
 
 const logout = () => {
